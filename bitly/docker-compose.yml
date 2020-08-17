@@ -1,0 +1,73 @@
+version: '3.4'
+services:
+  postgres:
+    container_name: sql-postgres
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: bitly-relational-db-dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+  dynamodb:
+    container_name: nosql-dynamodb
+    image: amazon/dynamodb-local:latest
+    volumes:
+      - ./dynamodb_data:/home/dynamodblocal/data/
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/
+    ports:
+      - "8000:8000"
+    environment:
+      AWS_ACCESS_KEY_ID: 0
+      AWS_SECRET_ACCESS_KEY: 0
+      AWS_DEFAULT_REGION: eu-west-2
+    restart: always
+  # docker-compose exec kgs rake console
+  kgs:
+    container_name: kgs
+    build:
+      context: ./kgs
+      dockerfile: ./infra/development/Dockerfile
+    depends_on:
+      - dynamodb
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./kgs:/kgs
+      - ./kgs/Gemfile:/kgs/Gemfile
+      - ./kgs/Gemfile.lock:/kgs/Gemfile.lock
+      - kgs_gems:/usr/local/bundle/gems
+    environment:
+      KGS_PORT: 3001
+      AWS_DYNAMO_ACCESS_KEY_ID: 0
+      AWS_DYNAMO_SECRET_ACCESS_KEY: 0
+      AWS_DYNAMO_REGION: eu-west-2
+      AWS_DYNAMO_NAMESPACE: kgs
+      AWS_DYNAMO_LOCAL_ENDPOINT: http://nosql-dynamodb:8000
+  # docker-compose exec api rails console
+  api:
+    container_name: api
+    build:
+      context: ./api
+      dockerfile: ./infra/development/Dockerfile
+    depends_on:
+      - kgs
+      - postgres
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./api:/api
+      - ./api/Gemfile:/api/Gemfile
+      - ./api/Gemfile.lock:/api/Gemfile.lock
+      - api_gems:/usr/local/bundle/gems
+    environment:
+      RAILS_ENV: development
+      DATABASE_NAME: bitly-relational-db-dev
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+volumes:
+  api_gems:
+  kgs_gems:
+  postgres_data:
