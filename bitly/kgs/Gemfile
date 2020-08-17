@@ -1,0 +1,25 @@
+source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+# Classy web-development dressed in a DSL (official / canonical repo)
+gem 'sinatra'
+
+# A modular Ruby web server interface.
+gem 'rack'
+
+# A fast JSON:API serializer for Ruby (fork of Netflix/fast_jsonapi)
+gem 'jsonapi-serializer'
+
+# A runtime developer console and IRB alternative with powerful introspection capabilities.
+gem 'pry'
+
+# AWS sdk for Ruby
+gem 'aws-sdk'
+
+# Ruby ORM for Amazon's DynamoDB.
+gem 'dynamoid'
+
+group :test do
+  gem 'rack-test'
+  gem 'rspec'
+end

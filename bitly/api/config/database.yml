@@ -1,0 +1,18 @@
+primary-db: &primary-db
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  database: <%= ENV['DATABASE_NAME'] %>
+  username: <%= ENV['DATABASE_USER'] %>
+  password: <%= ENV['DATABASE_PASSWORD'] %>
+  port: <%= ENV['DATABASE_PORT'] %>
+  host: <%= ENV['DATABASE_HOST'] %>
+development:
+  primary:
+    <<: *primary-db
+test:
+  primary:
+    <<: *primary-db
+production:
+  primary:
+    <<: *primary-db
